@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rentverse/features/property/domain/entity/list_property_entity.dart';
+import 'package:rentverse/role/tenant/presentation/widget/detail_property/accessorise_widget.dart';
 import 'package:rentverse/role/tenant/presentation/widget/detail_property/image_tile.dart';
 
 class DetailProperty extends StatelessWidget {
@@ -22,6 +23,7 @@ class DetailProperty extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ImageTile(images: property.images),
+              AccessoriseWidget(attributes: property.attributes),
               const SizedBox(height: 16),
               Text(
                 property.title,

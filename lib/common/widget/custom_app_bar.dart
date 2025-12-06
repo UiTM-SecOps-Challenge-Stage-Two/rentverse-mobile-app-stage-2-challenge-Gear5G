@@ -9,7 +9,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   const CustomAppBar({
     super.key,
     required this.displayName,
-    this.backgroundColor = const Color(0xFFF5F5F5),
+    this.backgroundColor = Colors.transparent,
     this.height = 60,
   });
 
