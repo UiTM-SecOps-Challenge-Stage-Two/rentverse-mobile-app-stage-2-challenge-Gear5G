@@ -26,7 +26,7 @@ class DioClient {
       ),
     );
 
-    _dio.interceptors.add(DioInterceptor(_logger, _sharedPreferences));
+    _dio.interceptors.add(DioInterceptor(_logger, _sharedPreferences, _dio));
   }
 
   // Getter raw Dio (jika sewaktu-waktu butuh akses langsung)
