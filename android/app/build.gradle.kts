@@ -26,10 +26,14 @@ android {
         applicationId = "com.example.rentverse"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = 21
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders = [
+        midtransClientKey: "SB-Mid-client-Jctrg5LVP60MSIiC", // Ganti dengan Client Key dari Dashboard Midtrans
+        uikitTheme: "@style/Theme.AppCompat.Light" // Tema default Midtrans
+    ]
     }
 
     buildTypes {
