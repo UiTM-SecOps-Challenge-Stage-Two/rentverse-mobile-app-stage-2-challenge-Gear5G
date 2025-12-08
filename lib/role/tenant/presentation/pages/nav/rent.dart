@@ -9,20 +9,43 @@ import 'package:rentverse/role/tenant/presentation/pages/rent/midtrans_payment_p
 import 'package:rentverse/role/tenant/presentation/cubit/rent/cubit.dart';
 import 'package:rentverse/role/tenant/presentation/cubit/rent/state.dart';
 
-class TenantRentPage extends StatelessWidget {
+enum BookingSortOrder { statusAsc, statusDesc }
+
+class TenantRentPage extends StatefulWidget {
   const TenantRentPage({super.key});
+
+  @override
+  State<TenantRentPage> createState() => _TenantRentPageState();
+}
+
+class _TenantRentPageState extends State<TenantRentPage> {
+  BookingSortOrder _sortOrder = BookingSortOrder.statusAsc;
+
+  List<BookingListItemEntity> _sorted(List<BookingListItemEntity> items) {
+    final sorted = List<BookingListItemEntity>.of(items);
+    sorted.sort((a, b) {
+      final statusCompare = _sortOrder == BookingSortOrder.statusAsc
+          ? a.status.compareTo(b.status)
+          : b.status.compareTo(a.status);
+
+      if (statusCompare != 0) return statusCompare;
+      return a.property.title.compareTo(b.property.title);
+    });
+    return sorted;
+  }
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 4,
       child: BlocProvider(
         create: (_) =>
             RentCubit(sl<GetBookingsUseCase>(), sl<PayInvoiceUseCase>())
               ..load(),
         child: Scaffold(
+          backgroundColor: Color(0xFFF5F5F5),
           appBar: AppBar(
-            backgroundColor: Color(0xFFF5F5F5),
+            backgroundColor: Colors.white,
             elevation: 0,
             foregroundColor: Colors.black,
             leading: IconButton(
@@ -38,15 +61,33 @@ class TenantRentPage extends StatelessWidget {
             ),
             centerTitle: true,
             actions: [
-              IconButton(icon: const Icon(Icons.more_horiz), onPressed: () {}),
+              PopupMenuButton<BookingSortOrder>(
+                icon: const Icon(Icons.sort),
+                initialValue: _sortOrder,
+                onSelected: (value) => setState(() => _sortOrder = value),
+                itemBuilder: (context) => const [
+                  PopupMenuItem(
+                    value: BookingSortOrder.statusAsc,
+                    child: Text('Sort status A → Z'),
+                  ),
+                  PopupMenuItem(
+                    value: BookingSortOrder.statusDesc,
+                    child: Text('Sort status Z → A'),
+                  ),
+                ],
+              ),
             ],
             bottom: const TabBar(
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
               indicatorColor: Color(0xFF1CD8D2),
               labelColor: Color(0xFF1CD8D2),
               unselectedLabelColor: Colors.black,
               tabs: [
-                Tab(text: 'PENDING_PAYMENT'),
-                Tab(text: 'ACTIVE'),
+                Tab(text: 'Pending'),
+                Tab(text: 'Active'),
+                Tab(text: 'Completed'),
+                Tab(text: 'Cancelled'),
               ],
             ),
           ),
@@ -56,20 +97,35 @@ class TenantRentPage extends StatelessWidget {
                 return Center(child: Text(state.error!));
               }
 
+              final pending = _sorted(state.pendingPayment);
+              final active = _sorted(state.active);
+              final completed = _sorted(state.completed);
+              final cancelled = _sorted(state.cancelled);
+
               return TabBarView(
                 children: [
                   _BookingList(
                     statusLabel: 'Approved by the owner',
-                    items: state.pendingPayment,
+                    items: pending,
                     buttonLabel: 'Go to Payment',
-                    isPaying: state.isPaying,
                     onPay: (item) => _handlePayment(context, item),
                   ),
                   _BookingList(
                     statusLabel: 'Active Booking',
-                    items: state.active,
+                    items: active,
                     buttonLabel: 'View Detail',
-                    isPaying: state.isPaying,
+                    onPay: (item) => _handlePayment(context, item),
+                  ),
+                  _BookingList(
+                    statusLabel: 'Completed',
+                    items: completed,
+                    buttonLabel: 'View Detail',
+                    onPay: (item) => _handlePayment(context, item),
+                  ),
+                  _BookingList(
+                    statusLabel: 'Cancelled',
+                    items: cancelled,
+                    buttonLabel: 'View Detail',
                     onPay: (item) => _handlePayment(context, item),
                   ),
                 ],
@@ -87,14 +143,12 @@ class _BookingList extends StatelessWidget {
     required this.statusLabel,
     required this.items,
     required this.buttonLabel,
-    required this.isPaying,
     required this.onPay,
   });
 
   final String statusLabel;
   final List<BookingListItemEntity> items;
   final String buttonLabel;
-  final bool isPaying;
   final void Function(BookingListItemEntity) onPay;
 
   @override

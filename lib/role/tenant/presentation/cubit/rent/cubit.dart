@@ -22,12 +22,16 @@ class RentCubit extends Cubit<RentState> {
 
       final pending = _filterByStatus(res.items, 'PENDING_PAYMENT');
       final active = _filterByStatus(res.items, 'ACTIVE');
+      final completed = _filterByStatus(res.items, 'COMPLETED');
+      final cancelled = _filterByStatus(res.items, 'CANCELLED');
 
       emit(
         state.copyWith(
           isLoading: false,
           pendingPayment: pending,
           active: active,
+          completed: completed,
+          cancelled: cancelled,
           hasMore: res.meta.hasMore,
           nextCursor: res.meta.nextCursor,
         ),
