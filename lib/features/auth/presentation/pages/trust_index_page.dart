@@ -19,6 +19,8 @@ class TrustIndexPage extends StatelessWidget {
       create: (_) {
         final cubit = TrustIndexCubit();
         cubit.loadFromAuthState(context.read<AuthCubit>().state);
+        // Ensure fresh data from /auth/me
+        cubit.refreshFromApi();
 
         // Log current auth/me fetch for debugging
         try {

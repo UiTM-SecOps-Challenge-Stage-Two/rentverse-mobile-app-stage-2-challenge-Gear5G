@@ -2,32 +2,55 @@ import 'dart:developer' as developer;
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rentverse/common/bloc/auth/auth_state.dart';
+import 'package:rentverse/core/resources/data_state.dart';
+import 'package:rentverse/core/services/service_locator.dart';
 import 'package:rentverse/features/auth/domain/entity/user_entity.dart';
+import 'package:rentverse/features/auth/domain/usecase/get_user_usecase.dart';
 import 'package:rentverse/features/auth/presentation/cubit/trust_index/state.dart';
 
 class TrustIndexCubit extends Cubit<TrustIndexState> {
   TrustIndexCubit() : super(const TrustIndexState());
 
+  GetUserUseCase get _getUserUseCase => sl<GetUserUseCase>();
+
   void loadFromAuthState(AuthState authState) {
     if (authState is! Authenticated) return;
 
     final UserEntity user = authState.user;
-    // Role-aware scoring: tenant uses TTI, landlord uses LRS. If both roles exist, prefer tenant TTI unless it's missing.
-    final double score;
-    if (user.isTenant) {
-      score = user.tenantProfile?.ttiScore ?? 0;
-    } else if (user.isLandlord) {
-      score = user.landlordProfile?.lrsScore ?? 0;
-    } else {
-      score = 0;
-    }
+    final double score = _scoreFromUser(user);
+    _emitWithScore(score, user);
+  }
 
+  Future<void> refreshFromApi() async {
+    emit(state.copyWith(isLoading: true));
+
+    final result = await _getUserUseCase();
+    if (result is DataSuccess<UserEntity> && result.data != null) {
+      final user = result.data!;
+      final double score = _scoreFromUser(user);
+      _emitWithScore(score, user);
+    } else {
+      emit(state.copyWith(isLoading: false, error: 'Failed to load profile'));
+    }
+  }
+
+  double _scoreFromUser(UserEntity user) {
+    // Prefer landlord LRS when landlord role + data exists; otherwise tenant TTI; fallback to any available score.
+    if (user.isLandlord && user.landlordProfile?.lrsScore != null) {
+      return user.landlordProfile!.lrsScore;
+    }
+    if (user.isTenant && user.tenantProfile?.ttiScore != null) {
+      return user.tenantProfile!.ttiScore;
+    }
+    return user.landlordProfile?.lrsScore ?? user.tenantProfile?.ttiScore ?? 0;
+  }
+
+  void _emitWithScore(double score, UserEntity user) {
     developer.log(
-      'TrustIndexCubit computed score=$score (isTenant=${user.isTenant}, isLandlord=${user.isLandlord}, tti=${user.tenantProfile?.ttiScore}, lrs=${user.landlordProfile?.lrsScore})',
+      'TrustIndexCubit score=$score (isTenant=${user.isTenant}, isLandlord=${user.isLandlord}, tti=${user.tenantProfile?.ttiScore}, lrs=${user.landlordProfile?.lrsScore})',
       name: 'TrustIndex',
     );
 
-    // Placeholder review stats; can be replaced when API available.
     const double avgRating = 4.5;
     const int totalReviews = 7;
     final reviews = _mockReviews();
