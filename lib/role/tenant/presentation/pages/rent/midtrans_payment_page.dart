@@ -25,9 +25,6 @@ class MidtransPaymentPage extends StatefulWidget {
 }
 
 class _MidtransPaymentPageState extends State<MidtransPaymentPage> {
-  String _selectedOnline = 'Online Virtual Account';
-  String _selectedBank = 'Bank BRI';
-  String _selectedAtm = 'ATM Virtual Account';
   bool _isProcessing = false;
 
   @override
@@ -59,63 +56,7 @@ class _MidtransPaymentPageState extends State<MidtransPaymentPage> {
                 priceLabel: priceLabel,
               ),
             ),
-            const SizedBox(height: 12),
-            _SectionCard(
-              title: 'Select Payment Method',
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Online Banking',
-                    style: TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(height: 8),
-                  _MethodTile(
-                    title: 'Online Virtual Account',
-                    isSelected: _selectedOnline == 'Online Virtual Account',
-                    onTap: () => setState(
-                      () => _selectedOnline = 'Online Virtual Account',
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _DropdownMethod(
-                    value: _selectedBank,
-                    items: const ['Bank BRI', 'Bank Mandiri', 'Bank BCA'],
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() => _selectedBank = value);
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'ATM',
-                    style: TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(height: 8),
-                  _MethodTile(
-                    title: 'ATM Virtual Account',
-                    isSelected: _selectedAtm == 'ATM Virtual Account',
-                    onTap: () =>
-                        setState(() => _selectedAtm = 'ATM Virtual Account'),
-                  ),
-                  const SizedBox(height: 8),
-                  _MethodTile(
-                    title: 'ATM',
-                    isSelected: _selectedAtm == 'ATM',
-                    onTap: () => setState(() => _selectedAtm = 'ATM'),
-                  ),
-                  const SizedBox(height: 8),
-                  _MethodTile(
-                    title: 'ATM Virtual Account',
-                    isSelected: _selectedAtm == 'ATM Virtual Account 2',
-                    onTap: () =>
-                        setState(() => _selectedAtm = 'ATM Virtual Account 2'),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 80),
+            const SizedBox(height: 32),
           ],
         ),
       ),
@@ -249,86 +190,6 @@ class _SectionCard extends StatelessWidget {
           const SizedBox(height: 10),
           child,
         ],
-      ),
-    );
-  }
-}
-
-class _MethodTile extends StatelessWidget {
-  const _MethodTile({
-    required this.title,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  final String title;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isSelected
-                  ? const Color(0xFF00B0FF)
-                  : Colors.grey.shade300,
-              width: isSelected ? 2 : 1,
-            ),
-          ),
-          child: Row(
-            children: [
-              Expanded(child: Text(title)),
-              Icon(
-                isSelected
-                    ? Icons.radio_button_checked
-                    : Icons.radio_button_off,
-                color: isSelected ? const Color(0xFF00B0FF) : Colors.grey,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _DropdownMethod extends StatelessWidget {
-  const _DropdownMethod({
-    required this.value,
-    required this.items,
-    required this.onChanged,
-  });
-
-  final String value;
-  final List<String> items;
-  final ValueChanged<String?> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: DropdownButton<String>(
-        value: value,
-        isExpanded: true,
-        underline: const SizedBox.shrink(),
-        items: items
-            .map((e) => DropdownMenuItem<String>(value: e, child: Text(e)))
-            .toList(),
-        onChanged: onChanged,
       ),
     );
   }
