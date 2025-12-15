@@ -3,10 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rentverse/common/colors/custom_color.dart';
 import 'package:rentverse/core/services/service_locator.dart';
 import 'package:rentverse/features/auth/domain/usecase/logout_usecase.dart';
+import 'package:rentverse/features/auth/presentation/screen/edit_profile_screen.dart';
 import 'package:rentverse/common/bloc/auth/auth_cubit.dart';
 import 'package:rentverse/features/auth/presentation/cubit/profile/cubit.dart';
 import 'package:rentverse/features/auth/presentation/cubit/profile/state.dart';
-import 'package:rentverse/features/auth/presentation/screen/edit_profile_screen.dart';
 import 'package:rentverse/features/auth/presentation/pages/trust_index_page.dart';
 import 'package:rentverse/features/wallet/presentation/pages/my_wallet.dart';
 
@@ -69,6 +69,7 @@ class _ProfileView extends StatelessWidget {
                       name: displayName,
                       role: roleLabel,
                       avatarUrl: user.avatarUrl,
+                      isVerified: user.isVerified,
                     ),
                     const SizedBox(height: 20),
                     _ProfileMenuCard(
@@ -193,11 +194,13 @@ class _ProfileHeader extends StatelessWidget {
   final String name;
   final String role;
   final String? avatarUrl;
+  final bool isVerified;
 
   const _ProfileHeader({
     required this.name,
     required this.role,
     this.avatarUrl,
+    this.isVerified = false,
   });
 
   @override
@@ -207,6 +210,7 @@ class _ProfileHeader extends StatelessWidget {
       children: [
         Column(
           children: [
+            // Bagian Avatar (Tidak berubah)
             Stack(
               children: [
                 CircleAvatar(
@@ -259,6 +263,69 @@ class _ProfileHeader extends StatelessWidget {
                 role,
                 style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
               ),
+            const SizedBox(height: 6),
+
+            // --- PERUBAHAN ADA DI SINI (ROW) ---
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 1. Tombol Edit dipindahkan ke paling KIRI
+                GestureDetector(
+                  onTap: () async {
+                    // Navigate to edit screen; EditProfileScreen handles UpdateProfileUseCase.
+                    await Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const EditProfileScreen(),
+                      ),
+                    );
+                    // After returning, refresh profile
+                    // ignore: use_build_context_synchronously
+                    if (context.mounted) {
+                      final cubit = context.read<ProfileCubit>();
+                      cubit.loadProfile();
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: const [
+                        BoxShadow(color: Colors.black12, blurRadius: 6),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.edit,
+                      size: 14,
+                      color: appSecondaryColor,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 8), // Jarak antara tombol edit dan status
+                // 2. Ikon Verified/Error
+                Icon(
+                  isVerified ? Icons.verified : Icons.error_outline,
+                  size: 14,
+                  color: isVerified
+                      ? Colors.green.shade600
+                      : Colors.orange.shade700,
+                ),
+                const SizedBox(width: 6),
+
+                // 3. Teks Verified/Not Verified
+                Text(
+                  isVerified ? 'Verified' : 'Not verified',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isVerified
+                        ? Colors.green.shade700
+                        : Colors.orange.shade700,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ],

@@ -3,6 +3,7 @@ import 'package:rentverse/common/utils/network_utils.dart';
 import 'package:rentverse/common/widget/pull_to_refresh.dart';
 import 'package:rentverse/core/services/service_locator.dart';
 import 'package:rentverse/features/review/domain/usecase/get_property_reviews_usecase.dart';
+import 'package:rentverse/core/resources/data_state.dart';
 
 class PropertyReviewsWidget extends StatefulWidget {
   final String propertyId;
@@ -45,12 +46,21 @@ class _PropertyReviewsWidgetState extends State<PropertyReviewsWidget> {
         cursor: _cursor,
       );
       final res = await usecase.call(param: params);
-      if (res.data != null) {
+      if (res is DataSuccess<Map<String, dynamic>> && res.data != null) {
         final map = res.data as Map<String, dynamic>;
         final items = map['items'] as List<dynamic>? ?? [];
         final meta = map['meta'] as Map<String, dynamic>? ?? {};
+        // Ensure items are maps and safe to render
+        final safeItems = <Map<String, dynamic>>[];
+        for (final it in items) {
+          if (it is Map<String, dynamic>) {
+            safeItems.add(it);
+          } else if (it is Map) {
+            safeItems.add(Map<String, dynamic>.from(it));
+          }
+        }
         setState(() {
-          _items.addAll(items);
+          _items.addAll(safeItems);
           _cursor = meta['nextCursor'] as String?;
           _hasMore = meta['hasMore'] == true;
         });

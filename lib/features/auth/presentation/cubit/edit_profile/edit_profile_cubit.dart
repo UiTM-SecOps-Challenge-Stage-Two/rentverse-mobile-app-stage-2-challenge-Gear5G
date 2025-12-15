@@ -69,6 +69,12 @@ class EditProfileCubit extends Cubit<EditProfileState> {
     );
   }
 
+  void setEmail(String value) {
+    emit(
+      state.copyWith(emailValue: value, resetMessage: true, resetError: true),
+    );
+  }
+
   Future<void> updateProfile({String? name, String? phone}) async {
     emit(state.copyWith(isSaving: true, resetError: true, resetMessage: true));
     final result = await _updateProfileUseCase(

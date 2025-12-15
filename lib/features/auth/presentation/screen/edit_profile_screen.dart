@@ -73,7 +73,7 @@ class EditProfileScreen extends StatelessWidget {
                           CustomTextField(
                             hintText: 'Email',
                             initialValue: state.emailValue,
-                            readOnly: true,
+                            onChanged: cubit.setEmail,
                             prefixIcon: const Icon(
                               Icons.email_outlined,
                               color: Colors.grey,

@@ -48,8 +48,32 @@ class ReviewRepositoryImpl implements ReviewRepository {
         cursor,
       );
       if (resp.data != null) {
-        return DataSuccess(data: resp.data!);
+        // resp.data is expected to be a Map with 'items' and 'meta'
+        final raw = resp.data!;
+        final items = raw['items'];
+        final meta = raw['meta'];
+
+        final normalizedItems = <Map<String, dynamic>>[];
+        if (items is List) {
+          for (final it in items) {
+            if (it is Map<String, dynamic>) {
+              normalizedItems.add(it);
+            } else if (it is Map) {
+              normalizedItems.add(Map<String, dynamic>.from(it));
+            }
+          }
+        }
+
+        final normalizedMeta = <String, dynamic>{};
+        if (meta is Map) {
+          normalizedMeta.addAll(Map<String, dynamic>.from(meta));
+        }
+
+        return DataSuccess(
+          data: {'items': normalizedItems, 'meta': normalizedMeta},
+        );
       }
+
       return DataFailed(
         DioException(
           requestOptions: RequestOptions(path: '/reviews/property/$propertyId'),
